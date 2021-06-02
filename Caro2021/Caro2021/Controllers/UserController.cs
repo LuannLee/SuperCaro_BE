@@ -1,8 +1,10 @@
-﻿using Caro2021.Models;
+﻿using Caro2021.HubConfig;
+using Caro2021.Models;
 using Caro2021.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -19,12 +21,14 @@ namespace Caro2021.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private IHubContext<CaroRealtimeHub> _hub;
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
-        public UserController(AppDbContext context, IConfiguration config)
+        public UserController(AppDbContext context, IConfiguration config, IHubContext<CaroRealtimeHub> hub)
         {
             _context = context;
             _config = config;
+            _hub = hub;
         }
 
         [HttpPost("register")]
@@ -46,6 +50,8 @@ namespace Caro2021.Controllers
             {
                 return BadRequest("Mật khẩu xác nhận không đúng !!");
             }
+
+            
 
             var user = new User();
             user.Id = Guid.NewGuid();
@@ -75,8 +81,17 @@ namespace Caro2021.Controllers
 
             if(user.Password != request.Password)
             {
-                return BadRequest("Mật khẩu khôgn chính xác !");
+                return BadRequest("Mật khẩu không chính xác !");
             }
+
+            // Ở đây chúng ta nhận ra rằng user tồn tại và đúng mật khẩu
+
+            // thực hiện xử lý cập nhật status bằng true
+
+            user.Status = true;
+            _context.Update(user);
+            _context.SaveChanges();
+
 
             var claims = new[]
             {
@@ -98,7 +113,45 @@ namespace Caro2021.Controllers
                 signingCredentials: creds
                 );
 
+            var users = _context.Users.ToList();
+
+            // Gửi danh sách User đi
+            _hub.Clients.All.SendAsync("user-online", users);
+
             return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+        }
+
+        [HttpPost("logout")]
+        [AllowAnonymous]
+        public IActionResult logout(LoginUser request)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.UserName == request.UserName);
+
+            if (user == null)
+            {
+                return BadRequest("Tài khoản này chưa được đăng ký !!!");
+            }
+
+            if (user.Password != request.Password)
+            {
+                return BadRequest("Mật khẩu không chính xác !");
+            }
+
+            // Ở đây chúng ta nhận ra rằng user tồn tại và đúng mật khẩu
+
+            // thực hiện xử lý cập nhật status bằng true
+
+            user.Status = true;
+            _context.Update(user);
+            _context.SaveChanges();
+
+
+            var users = _context.Users.ToList();
+
+            // Gửi danh sách User đi
+            _hub.Clients.All.SendAsync("user-online", users);
+
+            return Ok("Đăng xuất thành công !");
         }
     }
 }

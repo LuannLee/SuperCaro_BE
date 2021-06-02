@@ -147,6 +147,9 @@ namespace Caro2021.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 

@@ -1,3 +1,4 @@
+using Caro2021.HubConfig;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,14 +28,17 @@ namespace Caro2021
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                                   builder =>
                                   {
-                                      builder.AllowAnyHeader()
-                                             .AllowAnyOrigin()
-                                             .AllowAnyMethod();
+                                      builder.WithOrigins("http://localhost:4200")
+                                             .AllowAnyHeader()
+                                             .AllowAnyMethod()
+                                             .AllowCredentials();
                                   });
             });
 
             services.AddDbContext<AppDbContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddSignalR();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -64,6 +68,7 @@ namespace Caro2021
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<CaroRealtimeHub>("/real-time");
             });
         }
     }

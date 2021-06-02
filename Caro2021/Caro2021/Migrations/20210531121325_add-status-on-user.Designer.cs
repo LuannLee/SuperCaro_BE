@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Caro2021.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210528061533_initialize")]
-    partial class initialize
+    [Migration("20210531121325_add-status-on-user")]
+    partial class addstatusonuser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -148,6 +148,9 @@ namespace Caro2021.Migrations
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
