@@ -141,7 +141,7 @@ namespace Caro2021.Controllers
 
             // thực hiện xử lý cập nhật status bằng true
 
-            user.Status = true;
+            user.Status = false;
             _context.Update(user);
             _context.SaveChanges();
 
