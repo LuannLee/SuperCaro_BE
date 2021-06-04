@@ -15,7 +15,7 @@ namespace Caro2021.Models
         public string Password { get; set; }
         public bool IsAdmin { get; set; }
         public int Score { get; set; }
-        public bool Status { get; set; }
+        public bool Status { get; set; } = false;
 
 
         public List<Message> Messages { get; set; }

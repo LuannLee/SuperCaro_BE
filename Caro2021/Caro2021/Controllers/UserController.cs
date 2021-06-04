@@ -122,7 +122,7 @@ namespace Caro2021.Controllers
         }
 
         [HttpPost("logout")]
-        [AllowAnonymous]
+        
         public IActionResult logout(LoginUser request)
         {
             var user = _context.Users.FirstOrDefault(x => x.UserName == request.UserName);
@@ -153,5 +153,16 @@ namespace Caro2021.Controllers
 
             return Ok("Đăng xuất thành công !");
         }
+
+        [HttpGet("get-user")]
+        [AllowAnonymous]
+        public IActionResult getuser()
+        {
+            var users = _context.Users.ToList();
+            if (null == users || 0 == users.Count())
+                return BadRequest("Không có danh sách người dùng");
+            return Ok(users);
+        }
+
     }
 }
