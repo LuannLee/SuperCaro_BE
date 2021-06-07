@@ -104,20 +104,35 @@ namespace Caro2021.Controllers
             return CreatedAtAction("GetUserRoom", new { id = userRoom.Id }, userRoom);
         }
 
-        // DELETE: api/UserRooms/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserRoom(Guid id)
+        // DELETE: api/UserRooms/userId/roomId
+        [HttpDelete("{userId}/{roomId}")]
+        public async Task<IActionResult> DeleteUserRoom(string userId, string roomId)
         {
-            var userRoom = await _context.UserRooms.FindAsync(id);
-            if (userRoom == null)
+            var userroom = await _context.UserRooms.FirstOrDefaultAsync(x => x.UserId.ToString() == userId && x.RoomId.ToString() == roomId);
+
+            if(null == userroom)
             {
-                return NotFound();
+                return BadRequest("Đối tượng chưa vào phòng");
             }
 
-            _context.UserRooms.Remove(userRoom);
-            await _context.SaveChangesAsync();
+            _context.UserRooms.Remove(userroom);
+            _context.SaveChanges();
 
-            return NoContent();
+            var UserRooms =  _context.UserRooms.Where(x => x.RoomId.ToString() == roomId);
+            if(UserRooms.Count() == 0)
+            {
+                var room = _context.Rooms.FirstOrDefault(x => x.Id.ToString() == roomId);
+                room.Status = 1;
+
+                _context.Rooms.Update(room);
+                _context.SaveChanges();
+            }
+
+           
+            
+
+            return Ok("Xoá thành công !");
+
         }
 
         private bool UserRoomExists(Guid id)
